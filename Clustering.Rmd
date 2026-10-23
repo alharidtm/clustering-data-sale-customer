@@ -1,0 +1,353 @@
+---
+title: "Clustering (Data Mining) SALE CUSTOMERS"
+subtitle: "Dummy Project"
+author: "Al Haridt Mahmudi"
+date: "Tanggal `r format(Sys.time(), '%d %B %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float:
+        collapsed: true
+        smooth_scroll: true
+    toc_depth: 4
+    fig_caption: yes
+    code_folding: show
+    number_sections: true
+    df_print: paged
+---
+
+<style>
+body {text-align: justify}
+</style>
+
+```{r, include=FALSE, echo=FALSE}
+# clean up the environment
+rm(list = ls())
+knitr::opts_chunk$set(echo = TRUE, 
+                      warning = FALSE, 
+                      message = FALSE, 
+                      fig.align = "center")
+options(scipen = 9999)
+```
+
+
+```{r load_libraries}
+# Use this R-Chunk to load all your libraries!
+# install.packages("tidyverse") 
+library(tidyverse)
+```
+
+```{r, out.width = "80%", echo = FALSE, fig.align = "center"}
+knitr::include_graphics("images/sale.png")
+```
+
+# Pendahuluan
+
+Semakin banyak bertambahnya perusahaan dalam bidang perdagangan sekarang ini membuat persaingan pasar semakin ketat. Termasuk diantaranya perusahaan perdagangan aksesoris pintu dan jendela semakin banyak pesaingnya, dikarenakan sekarang ini sedang banyak konstraktor konstraktor yang melakukan pembangunan gedung di berbagai daerah. Dengan semakin banyaknya hal tersebut, semakin banyak pula kebutuhan aksesoris pintu dan jendala yang menyebabkan dilakukannya pencatatan data transaksi pemesanan setiap hari dari berbagai macam pelanggan. Hal tersebut akan berdampak pada terjadinya pertambahan jumlah data setiap hari dalam basis data, baik data transaksi pemesanan maupun data pelanggan. 
+
+Dengan banyaknya pelanggan pada perusahaan perlu dilakukan pengolahan data untuk dilakukan strategi bisnis dalam menjaga hubungan yang baik dengan pelanggan terutama pelanggan yang loyal terhadap perusahaan. Hal tersebut dapat dilakukan proses segmentasi dengan mengelompokkan pelanggan yang memiliki kesamaan tertentu menjadi satu. Pada segmentasi pelanggan ini diterapkan metode clustering yang merupakan salah satu metode pada data mining untuk mengelompokkan sejumlah data menjadi kelompok-kelompok tertentu. Metode clustering memiliki banyak algoritma yang dapat digunakan, contohnya algoritma K-Means. Algoritma K-Means termasuk dalam teknik partisi yang membagi atau memisahkan objek ke k daerah bagian yang terpisah. Pada algoritman K-Means, setiap objek harus masuk dalam kelompok / cluster tertentu, tetapi dalam satu tahapan berikutnya objek akan berpindah ke cluster lain. 
+
+
+# Tinjauan Pustaka
+
+## Data Mining
+
+Data mining merupakan proses mengeksplorasi data berjumlah besar untuk dicari pola-polanya sehingga menjadi pengetahuan yang mempunyai arti dan berguna. 
+
+Secara garis besarnya tentang metode, data mining dibedakan dalam 2 pendekatan diantaranya Supervised Learning yaitu metode yang mencoba mencari hubungan antara atribut yang bervariable bebas dan sebuah atribut bervariabel tidak bebas. Hubungan dapat ditemukan dan diwakili dalam struktur yang disebut model. Biasanya model menjelaskan fenomena tersembunyi dalam dataset dan digunakan untuk memprediksi nilai atribut target hanya dengan mengetahui nilai-nilai atribut input . 
+
+Sedangkan Unsupervised Learning yaitu kebalikan dari supervised learning, di mana label masing-masing data pelatihan tidak diketahui sebelumnya. Berdasarkan pada tugas yang dapat dilakukan oleh data mining untuk mencari pola-pola data, dibedakan menjadi beberapa kelompok yaitu  : 
+
+1. Description, merupakan penggambaran pola dan kecenderungan yang ada di dalam data secara sederhana. Deskripsi tersebut sering memberi kemungkinan penggambaran untuk sebuah pola atau kecenderungan. 
+
+2. Classification, teknik memperhatikan tingkah laku dan atribut himpunan yang sudah didefinisikan. Teknik ini memberi klasifikasi untuk data baru dengan manipulasi data yang telah terklasifikasi dan output-nya berguna memberikan sejumlah aturan. Dalam kasusnya, klasifikasi merupakan supervised learning. 
+
+3. Prediction, hampir sama seperti klasifikasi dan estimasi. Namun nilai output prediksi akan adanya di masa mendatang. Beberapa teknik untuk klasifikasi juga estimasi bisa digunakan (dalam keadaan tepat) di dalam prediksi. Dalam kasusnya, prediksi merupakan supervised learning. 
+
+4. Estimation, hampir mirip klasifikasi. Namun variabel targetnya lebih bersifat numerik daripada kategori. Model dibangun berdasarkan record lengkap yang menyediakan nilai dari variabel target sebagai nilai prediksi. Dalam kasusnya, estimasi merupakan supervised learning.
+
+5. Clustering, adalah pengelompokan record atau pengamatan juga menciptakan kelas objek-objek yang ada kemiripan antara satu dengan lain dan memiliki ketidakmiripan dengan record dari cluster lain. Pada kasusnya, clustering merupakan unsupervised learning. 
+
+6. Association Rule, tugas asosiasi yang disebut juga “market basket analysis” adalah mencari relasi antara himpunan item dan menemukan atribut yang sering muncul dalam satu waktu dari banyak waktu yang pernah terjadi. Dalam kasusnya, asosiasi menggunakan metode unsupervised learning. 
+
+
+## Clustering
+
+Clustering merupakan proses melakukan partisi atau pemisahan satu set item data ke himpunan bagian yang disebut cluster. Item yang dalam cluster-nya memiliki karakteristik hampir sama antara satu dengan yang lain dan akan berbeda dengan item dalam cluster lain. Partisi tidak dilakukan secara manual karena pasti akan sulit mengingat banyaknya data yang akan dipartisi, sehingga dibutuhkan suatu algoritma clustering. 
+
+Oleh karena itu, clustering sangat berguna terlebih dalam menemukan kelompok yang tidak dikenal dalam data. Di bussniness inteligence khususnya minimarket, clustering membantu mengatur banyaknya item barang yang dijual menjadi beberapa kelompok. Contoh mengelompokkan item barang dalam beberapa cluster dengan kesamaan karakteristik seperti item barang mana yang kurang laku, laku, atau sangat laku. Clustering juga dikenal sebagai data segmentasi karena mempartisi banyak data ke banyak grup berdasar kesamaan. Berikut beberapa manfaat yang diberikan oleh proses clustering :
+
+1. Clustering adalah metode segmentasi data yang berguna dalam memprediksi dan menganalisa masalah bisnis tertentu, misalnya segmentasi pasar 
+
+2. Identifikasi objek dalam berbagai bidang penelitian seperti computer vision dan image processing. 
+
+Sebetulnya ada beberapa tipe clustering yang dapat digunakan dalam melakukan pengelompokkan data sesuai kebutuhan dan tujuan, berikut tipe-tipe clustering : 
+
+1. Partitioning algorithms, merupakan algoritma yang cara kerjanya membentuk berbagai macam partisi lalu mengevaluasinya berdasarkan kriteria tertentu. 
+
+2. Hierarchial algorithms, merupakan algoritma yang membentuk dekomposisi hirarki dari sekumpulan data menggunakan beberapa kriteria. 
+
+3. Density based, merupakan algoritma yang membentuk cluster berdasar pada koneksi dan fungsi densitas. 
+
+5. Grid-based, membentuk cluster berdasar struktur multiple level granularity. 
+
+6. Model-based, menganggap jika sebuah model adalah hipotesa untuk masing-masing cluster dan model yang baik dipilih diantara model hipotesa tersebut. 
+
+
+# Metode Penelitian
+
+## Algoritma K-Means 
+
+K-Means merupakan salah satu algoritma Clustering yang masuk dalam kelompok unsupervised learning yang digunakan untuk membagi data menjadi beberapa kelompok dengan sistem partisi .
+
+Secara historis, bentuk esensial K-Means ditemukan oleh sejumlah peneliti dari lintas disiplin ilmu [21]. Hasil penelitian yang paling berpengaruh tentang hal tersebut adalah (Lloyd, 1982) dan (MacQueen, 1967). Menurut Gray & Neuhoff, algoritma K-Means berkembang hingga menjadi konteks yang lebih besar sebagai algoritma Hill-Climbing. 
+
+Dengan melihat input pada algoritma K-Means, bisa diperhatikan bahwa algoritma ini hanya melakukan pengolahan data yang bersifat kuantitatif atau numerik. Sebuah basis data biasanya tidak hanya berisi satu jenis tipe data saja, akan tetapi beragam tipe. Suatu basis data di dalamnya bisa berisi data-data yang memiliki tipe seperti: binary, nominal, ordinal, interval, dan ratio. Adapun basis data yang di dalamnya memiliki berbagai macam atribut dengan tipe yang berbeda, biasa dikenal dengan data multivariate. Sedangkan data yang memiliki tipe nominal dan ordinal dapat diberlakukan algoritma K-Means, dengan mengolahnya dahulu ke dalam bentuk data numerik (dapat dilakukan dengan cara diskritisasi). 
+
+Dalam setiap cluster memiliki titik pusat atau secara umum dikenal dengan istilah Centroid, dimana centroid ini mempresentasikan cluster tersebut. Secara sederhana algoritma K-Means yaitu algoritma dari data mining yang biasanya digunakan untuk dapat menyelesaikan masalah tentang pengelompokan (Clustering). 
+
+Pada pemrosesan data algoritma K Means Clustering, akan diawali dengan pengelompokan Centroid pertama 28 yang dipilih secara acak sebagai titik awal untuk setiap cluster, kemudian menghitung secara berulang agar posisi Centroid optimal
+
+```{r, out.width = "60%", echo = FALSE, fig.align = "center"}
+knitr::include_graphics("images/kmeans.png")
+```
+
+Secara umum, langkah-langkah algoritma K-Means antara lain: 
+
+* Tentukan jumlah cluster K. 
+
+* Lakukan inisialisasi K pusat cluster. Inisialisasi dapat dilaksanakan melalui berbagai macam cara. Akan tetapi cara yang paling sering dipakai yaitu dengan menggunakan cara acak (random). Pusat-pusat cluster diberi nilai awal menggunakan angka acak. 
+
+* Alokasikan seluruh data atau objek ke cluster yang terdekat. Kedekatan dari dua objek dapat ditentukan dari jarak kedua objek tersebut. Begitu pula kedekatan suatu data ke cluster tertentu dapat ditentukan dari jarak data dengan pusat cluster. Jarak antara satu data dengan satu cluster tertentu dapat menentukan suatu data tersebut akan masuk ke cluster yang mana. 
+
+* Hitung kembali centroid yang memiliki keanggotaan cluster sekarang ini. Pusat cluster atau centroid merupakan rata-rata dari semua data atau objek pada cluster tertentu. Apabila diinginkan bisa juga memakai median dari cluster tertentu. Jadi rata-rata (mean) bukanlah satu-satunya ukuran yang dapat digunakan. 
+
+* Tugaskan kembali setiap objek memakai centroid yang baru. Apabila pusat cluster atau centroid tidak berubah kembali, maka proses clustering sudah selesai. Atau, kembali lagi ke langkah 3 (tiga) sampai pusat cluster atau centroid tidak mengalami perubahan lagi.
+
+Untuk dapat menghitung jarak antara data dan titik pusat cluster, terdapat beberapa persamaan distance space (rumus jarak) yang terkenal seperti Euclidean dan Manhattan. 
+
+Euclidean Distance merupakan rumus jarak yang umum digunakan karena sangat mudah dipahami dan mendukung hasil perhitungan cluster. Euclidean Distance menghasilkan perhitungan jarak terpendek dari dua titik yang sedang diperhitungkan. Perhitungan dilakukan selama belum mendapatkan nilai pengelompokan yang konvergen. Pada beberapa contoh kasus, perhitungan memerlukan puluhan bahkan ratusan iterasi. Adapun persamaan dari Euclidean Distance yaitu seperti berikut ini:
+
+$$d(i,j) =\sqrt{(x_{1i}-x_{1j})^2 +(x_{2i}-x_{2j})^2+....+(x_{ki}-x_{kj})^2}$$
+Dimana :
+
+d(i,j)=Jarak data ke i ke pusat cluster j
+
+Xki = Data ke i pada atribut data ke k
+
+Xkj = Data ke i pada atribut data ke k
+
+
+Euclidean Distance telah banyak digunakan pada berbagai penelitian. Keberhasilan dalam menghitung jarak antara dua titik untuk mencari kemiripan, merupakan keunggulan dari Euclidean. Namun untuk mencari kemiripan pada data besar (Big Data) dengan ratusan atribut, Euclidean kurang dapat memberikan hasil yang baik. Artinya, Euclidean akan berada pada performa terbaik jika data berada di ruang kontinu dimana dimensi diskalakan dengan benar dan relevan.
+
+# Hasil dan Pembahasan
+
+## Database
+
+```{r}
+library(dplyr)
+library(magrittr)
+library(tidyverse)
+library(corrplot)
+library(cluster) 
+library(gridExtra)
+library(factoextra)
+customer <- read.csv("data-sale-customers.csv")
+head(customer)
+summary(customer)
+```
+Attribute Information:
+
+* FRESH - annual spending (m.u.) on fresh products (Continuous)
+
+* MILK - annual spending (m.u.) on milk products (Continuous)
+
+* GROCERY - annual spending (m.u.)on grocery products (Continuous)
+
+* FROZEN - annual spending (m.u.)on frozen products (Continuous)
+
+* DETERGENTS_PAPER- annual spending (m.u.) on detergents and paper products (Continuous)
+
+* DELICATESSEN - annual spending (m.u.)on and delicatessen products (Continuous);
+
+* CHANNEL - customers Channel - Horeca (Hotel/Restaurant/Cafe) or Retail channel (Nominal)
+
+* REGION - customers Region Lisnon, Oporto or Other (Nominal)
+
+
+Semua atribut memiliki skala yang sama kecuali Channel dan Region. Kita dapat mengabaikan atribut tersebut untuk pengelompokan dan normalisasi tidak diperlukan.
+```{r}
+customer %<>%
+  mutate(Channel = ifelse(Channel == 1, "Horeca", "Retail"),
+         Region = case_when(Region == 1 ~ "Lisbon",
+                            Region == 2 ~ "Oporto",
+                            Region == 3 ~ "Others"))
+
+head(customer)
+```
+
+Karena kita tidak ingin algoritma pengelompokan bergantung pada unit variabel arbitrer, kita mulai dengan menskalakan/menstandardisasi data menggunakan skala fungsi R:
+
+```{r}
+customer_sc <- as_tibble(scale(customer[3:8]))
+
+head(customer_sc)
+```
+Sekarang kolom Channel dan Region dikecualikan karena tidak mengacu pada informasi pengeluaran.
+
+
+## Clustering
+
+### KMeans
+
+Algoritma KMeans (juga disebut sebagai algoritma Lloyd) adalah algoritma pembelajaran mesin tanpa pengawasan yang paling umum digunakan yang digunakan untuk mempartisi data menjadi satu set kelompok k atau cluster.
+
+### Bagaimana Kerja KMeans?
+
+1. Tentukan jumlah cluster (k).
+
+2. Menginisialisasi k sentroid secara acak.
+
+3. Langkah Penugasan: Tetapkan setiap pengamatan ke sentroid terdekat (titik tengah) dengan menghitung jarak euclidean kuadrat paling sedikit antara sentroid dan pengamatan. (yaitu jarak euclidean kuadrat paling sedikit antara pusat yang ditugaskan dan pengamatan harus minimal daripada pusat lainnya).
+
+4. Perbarui Langkah: Hitung cara baru sebagai sentroid untuk kluster baru.
+
+5. Ulangi langkah penugasan dan pembaruan (yaitu langkah 3 & 4) sampai konvergensi (jumlah total minimum kuadrat) atau iterasi maksimum tercapai. 
+
+### Determining optimal number of clusters (k)
+
+Sebelum kita melakukan pengelompokan yang sebenarnya, kita perlu mengidentifikasi jumlah cluster optimal (k) untuk kumpulan data pelanggan grosir ini. Cara populer untuk menentukan jumlah cluster adalah
+
+1. Metode Siku
+
+2. Metode Siluet
+
+3. Metode Statis Gap
+
+Metode Siku dan Siluet adalah metode langsung dan metode statistik kesenjangan adalah metode statistik.
+
+Dalam demonstrasi ini, kita akan melihat bagaimana metode siluet digunakan.
+
+```{r}
+set.seed(212)
+
+fviz_nbclust(customer_sc , kmeans, method = "wss")
+```
+grafik tidak menunjukkan tikungan lutut yang tajam dalam kasus ini, tetapi kita dapat mempertimbangkan nilai k sebagai 5
+
+### Metode Siluet
+
+```{r}
+set.seed(212)
+
+fviz_nbclust(customer_sc, kmeans, method = "silhouette")
+```
+Metode siluet menunjukkan bahwa jumlah cluster yang optimal adalah 2.
+
+### Gap Statistic
+
+```{r}
+set.seed(212)
+gap_stat <- clusGap(customer_sc, FUN = kmeans, nstart = 25,
+                    K.max = 10, B = 50)
+fviz_gap_stat(gap_stat)
+```
+Metode Gap Statistic menunjukkan bahwa jumlah cluster yang optimal adalah 3.
+
+Dengan perkiraan di atas untuk K, kita akan menghitung pengelompokan Kmeans untuk K = 2, 3 dan 5. Kami juga dapat melihat hasil kami dengan menggunakan fviz_cluster. Ini memberikan ilustrasi yang bagus tentang cluster. Jika ada lebih dari dua dimensi (variabel) fviz_cluster akan melakukan analisis komponen utama (PCA) dan plot titik data sesuai dengan dua komponen utama pertama yang menjelaskan sebagian besar varians.
+
+```{r}
+set.seed(212)
+
+k2 <- kmeans(customer_sc, centers = 2, nstart = 30)
+k3 <- kmeans(customer_sc, centers = 3, nstart = 30)
+k5 <- kmeans(customer_sc, centers = 5, nstart = 30)
+
+# plots to compare
+p1 <- fviz_cluster(k2, geom = "point", data = customer_sc) + ggtitle("k = 2")
+p2 <- fviz_cluster(k3, geom = "point",  data = customer_sc) + ggtitle("k = 3")
+p3 <- fviz_cluster(k5, geom = "point",  data = customer_sc) + ggtitle("k = 4")
+
+grid.arrange(p1, p2, p3, nrow = 2)
+```
+
+Penilaian visual di atas menunjukkan 2 dan 3 cluster memisahkan data dalam kelompok yang berbeda, juga dihitung dengan silhoutte dan metode statistik kesenjangan.
+
+Mari kita lihat detail cluster dalam kasus di atas.
+
+```{r}
+print(k2)
+print(k3)
+```
+Dari rincian di atas kita dapat menyimpulkan bahwa ukuran cluster 3 akan cocok untuk kita, karena memisahkan pengamatan variasi tinggi dalam kelompok yang terpisah. Cluster ini dapat mencakup pelanggan pengeluaran tinggi potensial.
+
+Dengan demikian kita akan menghitung analisis akhir kita menggunakan 3 sebagai cluster optimal.
+
+```{r}
+set.seed(212)
+final <- kmeans(customer_sc, 3, nstart = 30)
+print(final)
+fviz_cluster(final, geom = "point",  data = customer_sc)
+
+cluster_mean <- customer_sc %>%
+  mutate(Cluster = final$cluster) %>%
+  group_by(Cluster) %>%
+  summarise_all("mean")
+
+cluster_mean
+
+```
+
+```{r}
+# Visualize customer segments with average product spending  
+
+cluster_mean %>% 
+  gather(Product, MU, Fresh:Delicassen)%>%
+    ggplot(aes(x=Product , y = MU, fill = Product)) + geom_col(width = 0.5) + 
+              facet_grid(.~ Cluster)+ 
+                      scale_fill_brewer(palette = "Accent")+
+                          ylab("Customer Spending in Monetory Units") +
+                    ggtitle("Customer Segments with Average Product Spending")+
+                                    theme(axis.text.x = element_blank(),
+                                          axis.ticks.x = element_blank(),
+                                          axis.title.x = element_blank())
+```
+
+Statistik di atas dan analisis visualnya menunjukkan bahwa kebiasaan belanja pelanggan bervariasi di setiap segmen. Kami akan menyimpulkannya di bagian terakhir kami.
+
+Sekarang mari kita analisis distribusi Saluran dan Wilayah di setiap kluster.
+
+```{r}
+# Channel and Region in Cluster 1/Segment 1
+
+customer[1:2] %>%
+  mutate(Cluster = final$cluster) %>%
+  filter(Cluster == 1) %>% ungroup() %>% count(Channel , Region)
+```
+
+
+
+# Kesimpulan
+
+Dari analisis di atas kita dapat menyimpulkan pengamatan di bawah ini atau kebiasaan belanja pelanggan dari setiap segmen yang diidentifikasi dalam data berkerumun:
+
+* Segmen 1: Segmen ini paling mewakili dan hanya berisi pelanggan Ritel yang membelanjakan terutama untuk Bahan Makanan, Susu diikuti oleh Deterjen dan kertas dan kemudian pada produk Segar.
+
+* Segmen 2: Segmen ini hanya berisi beberapa pelanggan Hotel / Restoran / Cafe yang menghabiskan banyak uang untuk Fresh, Frozen diikuti oleh Susu dan Bahan Makanan. Dan juga memiliki pengeluaran rata-rata tertinggi untuk Delicassen.Pelanggan ini membentuk kelompok yang terpisah dengan baik dengan kebiasaan belanja ini.
+
+* Segmen 3: Segmen ini terdiri dari mayoritas pelanggan Hotel / Restoran / Cafe bersama dengan Pelanggan Ritel yang membelanjakan dengan layak untuk Fresh diikuti oleh Bahan Makanan dan Susu, tetapi menghabiskan paling sedikit untuk Detergents_Paper dan Delicassen di semua kelompok.
+
+Ini menyimpulkan latihan segmentasi pelanggan kami menggunakan algoritma K-Means.
+
+# Session information
+
+```{r info, echo=FALSE}
+Sys.time()
+sessionInfo()
+Sys.getenv(c("USERDOMAIN","USERNAME","HOME"))
+```
+
+----
+<div style = "margin-bottom: 3cm;"></div>
+
+
